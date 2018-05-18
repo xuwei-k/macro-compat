@@ -11,8 +11,8 @@ import com.typesafe.tools.mima.core.ProblemFilters._
 
 lazy val buildSettings = Seq(
   organization := "org.typelevel",
-  scalaVersion := "2.10.6",
-  crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.3", "2.13.0-M3")
+  scalaVersion := "2.10.7",
+  crossScalaVersions := Seq("2.10.7", "2.11.12", "2.12.6", "2.13.0-M4")
 )
 
 lazy val commonSettings = Seq(
@@ -94,9 +94,18 @@ addCommandAlias("root", ";project root")
 lazy val scalaMacroDependencies: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
     scalaOrganization.value % "scala-reflect" % scalaVersion.value % "provided",
-    scalaOrganization.value % "scala-compiler" % scalaVersion.value % "provided",
-    compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.patch)
+    scalaOrganization.value % "scala-compiler" % scalaVersion.value % "provided"
   ),
+  libraryDependencies ++= {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, scalaMajor)) if scalaMajor <= 12 =>
+        Seq(
+          compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.patch)
+        )
+      case _ =>
+        Nil
+    }
+  },
   libraryDependencies ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
       // if scala 2.11+ is used, quasiquotes are merged into scala-reflect
@@ -157,7 +166,7 @@ lazy val noPublishSettings = Seq(
 
 lazy val mimaSettings = mimaDefaultSettings ++ Seq(
   mimaPreviousArtifacts := {
-    if(scalaVersion.value == "2.12.3" || scalaVersion.value == "2.13.0-M3") Set()
+    if(scalaVersion.value == "2.12.3" || scalaVersion.value == "2.13.0-M4") Set()
     else Set(organization.value %% moduleName.value % "1.1.0")
   },
 
